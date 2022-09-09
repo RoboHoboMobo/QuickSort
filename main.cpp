@@ -12,17 +12,15 @@ int main()
         std::cout << i << " ";
     std::cout << "\n";
 
-    Custom::sort(array, array + arraySize);
+    Custom::sort(array, array + arraySize, [](int a, int b){ return a > b; });
 
     for (auto i : array)
         std::cout << i << " ";
     std::cout << "\n";
 
-    std::vector<int> v(array, array + arraySize);
+    Custom::sort(array, array + arraySize);
 
-    Custom::sort(v.begin(), v.end());
-
-    for (auto i : v)
+    for (auto i : array)
         std::cout << i << " ";
     std::cout << "\n";
 

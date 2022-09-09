@@ -1,61 +1,58 @@
 #pragma once
 
 #include <iterator>
-#include <stdlib.h>
-#include <chrono>
 #include <algorithm>
 
 namespace Custom {
 
-template <typename RandomIteratorType>
-void sort(RandomIteratorType first, RandomIteratorType last)
+// QuickSort for C++11
+
+template <typename RandomIteratorType, typename Compare>
+void sort(RandomIteratorType first, RandomIteratorType last, Compare comp)
 {
     using ValueType = typename std::remove_reference<decltype(*first)>::type;
 
-    size_t distance = std::distance(first, last);
-
-    if (distance < 2)
+    if (first == last)
         return;
 
-    if (distance == 2) {
-        if (*first > *(first + 1))
-            std::swap(*first, *(first + 1));
-
-        return;
-    }
-
-    std::srand(std::time(0));
-    RandomIteratorType pPivot = first + std::rand() % distance;
+    RandomIteratorType pPivot = first + std::distance(first, last) / 2;
 
     auto pivot = *pPivot;
 
-    auto arrayCopy = new ValueType[distance];
-    auto front = arrayCopy;
-    auto back = arrayCopy + distance;
+    auto left = std::partition(first, last, [&pivot, comp](const ValueType& element) {
+            return comp(element, pivot);
+    });
 
-    size_t pivotCounter{};
+    auto right = std::partition(left, last, [&pivot, comp](const ValueType& element) {
+        return !comp(pivot, element);
+    });
 
-    for (auto it = first; it != last; ++it) {
-        auto value = *it;
-        if (value < pivot)
-            *(front++) = value;
-        else if (value > pivot)
-            *(--back) = value;
-        else
-            ++pivotCounter;
-    }
+    Custom::sort(first, left, comp);
+    Custom::sort(right, last, comp);
+}
 
-    for (auto it = front; it != front + pivotCounter; ++it)
-        *it = pivot;
+template <typename RandomIteratorType>
+void sort(RandomIteratorType first, RandomIteratorType last)
+{    
+    using ValueType = typename std::remove_reference<decltype(*first)>::type;
 
-    std::copy(arrayCopy, arrayCopy + distance, first);
+    if (first == last)
+        return;
 
-    delete[] arrayCopy;
+    RandomIteratorType pPivot = first + std::distance(first, last) / 2;
 
-    pPivot = std::find(first, last, pivot);
+    auto pivot = *pPivot;
 
-    Custom::sort(first, pPivot);
-    Custom::sort(pPivot + 1, last);
+    auto left = std::partition(first, last, [&pivot](const ValueType& element) {
+            return element < pivot;
+    });
+
+    auto right = std::partition(left, last, [&pivot](const ValueType& element) {
+        return !(pivot < element);
+    });
+
+    Custom::sort(first, left);
+    Custom::sort(right, last);
 }
 
 } // namespace Custom
